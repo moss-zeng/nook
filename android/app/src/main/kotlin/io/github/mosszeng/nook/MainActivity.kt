@@ -76,15 +76,18 @@ class MainActivity : FlutterActivity() {
                         thread {
                             try {
                                 val ctx = ctxFor(user, pass)
-                                val hidden = setOf(
-                                    "\$RECYCLE.BIN", "System Volume Information",
-                                    "desktop.ini", "Thumbs.db"
-                                )
                                 val names = SmbFile("smb://$host/$path/", ctx).use { dir ->
                                     dir.listFiles()
                                         .filter { f ->
-                                            val n = f.name.trimEnd('/')
-                                            n !in hidden && !n.startsWith(".")
+                                            // 按 SMB 属性自动过滤 Windows 隐藏/系统文件
+                                            // （$RECYCLE.BIN、System Volume Information、
+                                            //  desktop.ini、Thumbs.db 等都带 hidden/system 属性）。
+                                            // 不再按名字手动维护名单；. 开头的自建文件夹
+                                            // （.covers/.gallery）没有 hidden 属性，会保留。
+                                            val attr = try { f.attributes } catch (e: Exception) { 0 }
+                                            val isHidden = (attr and SmbFile.ATTR_HIDDEN) != 0
+                                            val isSystem = (attr and SmbFile.ATTR_SYSTEM) != 0
+                                            !isHidden && !isSystem
                                         }
                                         .map {
                                             if (it.isDirectory) "[D] " + it.name.trimEnd('/')
@@ -148,6 +151,36 @@ class MainActivity : FlutterActivity() {
                                 val bytes = SmbFile("smb://$host/$path", ctx).use { f ->
                                     if (!f.exists()) null
                                     else f.inputStream.use { it.readBytes() }
+                                }
+                                runOnUiThread { result.success(bytes) }
+                            } catch (e: Exception) {
+                                runOnUiThread { result.error("SMB_ERR", e.message, null) }
+                            }
+                        }
+                    }
+                    "readImageHeader" -> {
+                        val host = call.argument<String>("host")!!
+                        val user = call.argument<String>("user")!!
+                        val pass = call.argument<String>("pass")!!
+                        val path = call.argument<String>("path")!!
+                        // 只读文件前 maxBytes 字节（图片头部已含宽高），默认 65536
+                        val maxBytes = call.argument<Int>("maxBytes") ?: 65536
+                        thread {
+                            try {
+                                val ctx = ctxFor(user, pass)
+                                val bytes = SmbFile("smb://$host/$path", ctx).use { f ->
+                                    if (!f.exists()) null
+                                    else f.inputStream.use { input ->
+                                        val buf = ByteArray(maxBytes)
+                                        var off = 0
+                                        // 循环读直到填满 maxBytes 或流结束（只读头部，不读整图）
+                                        while (off < maxBytes) {
+                                            val n = input.read(buf, off, maxBytes - off)
+                                            if (n < 0) break
+                                            off += n
+                                        }
+                                        if (off == maxBytes) buf else buf.copyOf(off)
+                                    }
                                 }
                                 runOnUiThread { result.success(bytes) }
                             } catch (e: Exception) {

@@ -30,13 +30,17 @@ class ItemMeta {
   final String? date;
   final String? description;
   final Love love;
-  const ItemMeta({this.date, this.description, this.love = Love.passable});
+  final String? lovedAt; // 最近一次变成收藏态(preferred/pinnacle)的时间，ISO8601
+  const ItemMeta(
+      {this.date, this.description, this.love = Love.passable, this.lovedAt});
 
-  ItemMeta copyWith({String? date, String? description, Love? love}) =>
+  ItemMeta copyWith(
+          {String? date, String? description, Love? love, String? lovedAt}) =>
       ItemMeta(
         date: date ?? this.date,
         description: description ?? this.description,
         love: love ?? this.love,
+        lovedAt: lovedAt ?? this.lovedAt,
       );
 
   Map<String, dynamic> toJson() {
@@ -47,6 +51,7 @@ class ItemMeta {
     }
     final l = loveToString(love);
     if (l != null) m['love'] = l;
+    if (lovedAt != null && lovedAt!.isNotEmpty) m['lovedAt'] = lovedAt;
     return m;
   }
 
@@ -126,6 +131,7 @@ class PersonMetaRepo {
               date: v['date']?.toString(),
               description: v['description']?.toString(),
               love: loveFromString(v['love']?.toString()),
+              lovedAt: v['lovedAt']?.toString(),
             );
           }
         });

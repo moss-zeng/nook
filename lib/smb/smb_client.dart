@@ -76,6 +76,19 @@ class SmbClient {
     });
   }
 
+  /// 只读图片头部前 maxBytes 字节（含宽高信息），用于快速取尺寸。
+  /// 不存在返回 null。
+  static Future<Uint8List?> readImageHeader(SmbCreds c, String path,
+      {int maxBytes = 65536}) async {
+    return await _channel.invokeMethod<Uint8List>('readImageHeader', {
+      'host': c.host,
+      'user': c.user,
+      'pass': c.pass,
+      'path': path,
+      'maxBytes': maxBytes,
+    });
+  }
+
   /// 用外部播放器打开视频（发 smb:// 地址给系统/MX Player）
   static Future<void> openExternal(SmbCreds c, String path) async {
     await _channel.invokeMethod('openExternal', {

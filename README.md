@@ -1,183 +1,207 @@
+**English** · [中文](README.zh-CN.md) · [日本語](README.ja.md)
+
 # nook
 
-nook 是一个面向个人收藏者的本地媒体管理工具（Android）。它通过 SMB 协议访问电脑或 NAS 上的共享文件夹，把散落其中的视频、图片和各类收藏，按照收藏者自己定义的结构组织、展示和欣赏。它本身不负责播放，点开作品后交由手机上的外部播放器（如 MX Player）打开。
+nook is a local media management tool (Android) for personal collectors. It reaches the shared folders on your PC or NAS over SMB and organizes the videos, images, and assorted collectibles scattered across them into whatever structure you, the collector, choose to give them. nook doesn't play anything itself — tap a work and it hands off to an external player on your phone (such as MX Player).
 
-「nook」意为私密而安静的一隅——如同收藏者为自己的珍藏辟出的一方角落，这正是这个项目命名的由来。
+The word "nook" means a small, quiet, private corner — the kind of place a collector might set aside for the things they treasure. That's where the project's name comes from.
 
-## 它要解决的问题
+## The problem it solves
 
-一个长期的收藏爱好者，手里往往攒下大量喜爱的电子收藏品：有的是视频，有的是图片，还有的是文本。它们来源各异、格式不一，堆在一起杂乱无章，既不好归类，也难以好好欣赏。现有的工具，没有一个真正合适：
+A longtime collector tends to accumulate a lot of digital things they love: some are videos, some images, some text. They come from all over, in every format, and piled together they're a mess — hard to sort, hard to enjoy. None of the existing tools really fits:
 
-- **Gallery、VLC（图片 / 视频播放器）**：只能逐个打开播放，完全谈不上「管理」。面对成百上千、类型各异的收藏，它们无能为力。
+- **Gallery, VLC (image / video players):** they can only open and play things one at a time. "Management" isn't even on the table. Faced with hundreds or thousands of items of every kind, they're helpless.
 
-- **Solid Explorer、MT 管理器（文件管理器）**：管理文件本身是够用的，但对收藏者来说太「冷」——它只认得文件和文件夹，看到的永远是一长串文件名，既不直观、也无法为收藏附加任何信息（比如这是谁、有多喜欢、什么时候收的）。整理收藏因此格外费劲，更谈不上「欣赏」。
+- **Solid Explorer, MT Manager (file managers):** fine at managing the files themselves, but not built for a collector. They only know files and folders — all you ever see is a long list of filenames, and there's no way to attach anything to a piece (who is this, how much do I like it, when did I get it). Organizing a collection this way is a chore, and "enjoying" it is out of reach.
 
-- **Jellyfin、Fladder（媒体库 / 刮削器，Fladder 是 Jellyfin 风格的媒体库客户端）**：它们走向了另一个极端。这类工具是为电影、电视剧这样的公开影视内容设计的，依赖联网自动抓取海报、简介、演职人员等信息。对小众或个人收藏，它们既兼容不友好、又信息冗余——大多数小众作品根本不需要那么一大套元数据，而这些工具又无法按需关闭；更麻烦的是，它们会粗暴地从网络数据库拉取海报等文件塞进目录，把原本的文件夹搅得一团乱。
+- **Jellyfin, Fladder (media libraries / scrapers; Fladder is a Jellyfin-style media-library client):** these go to the opposite extreme. They're built for public content like movies and TV, and lean on the internet to fetch posters, synopses, cast lists, and so on. For niche or personal collections they're both a poor fit and overkill — most niche works don't need all that metadata, and these tools won't let you turn it off. Worse, they'll happily pull posters and other files down from online databases and dump them into your folders, leaving the whole place in disarray.
 
-一边是功能太少、只能播放的播放器；一边是过于沉重、又会弄脏目录的媒体库。对一个既有收藏癖、又对整洁和秩序有要求的人来说，两头都不合适。nook 就是为了填补中间这段空白：一个集管理、展示与播放（外接播放器）于一体，干净、守规则、且只管理收藏本身的工具——它有意不去做一个管理所有文件的通用管理器。
+On one side, players that do too little and can only play. On the other, media libraries that are too heavy and dirty up your folders. For someone who's both a collector at heart and particular about tidiness and order, neither end works. nook is meant to fill that gap in the middle: one tool for managing, displaying, and playing (via an external player) — clean, well-behaved, and concerned only with the collection itself. It deliberately doesn't try to be a general-purpose manager for all your files.
 
-## 设计理念
+## Design
 
-### 两种共享文件夹
+### Two kinds of shared folder
 
-nook 首先是一个能访问 SMB 共享文件夹的浏览器：在连接页填好电脑或 NAS 的地址与凭据后，就能列出其中的共享文件夹（下称 share，它是一个收藏库的根），进去浏览里面的内容。
+First and foremost, nook is a browser for SMB shared folders: enter your PC's or NAS's address and credentials on the connection page, and it lists the shared folders there (a _share_ — the root of one collection library), which you can step into and browse.
 
-但 nook 对待 share 有两种方式。区别在于这个 share 的根目录下有没有一个名为 `_styles.json` 的文件：
+But nook treats a share in one of two ways, depending on whether the share's root contains a file named `_styles.json`:
 
-- **普通共享文件夹**（没有 `_styles.json`）：nook 不做任何假设，就是朴素地浏览文件夹和文件——和一个文件管理器类似。这种模式适合用来整理一个还没成形的库。
-- **风格共享文件夹**（有 `_styles.json`）：nook 认为它已经是一个按规则整理过的收藏库，于是按收藏者定义的结构来组织展示。
+- **A plain share** (no `_styles.json`): nook makes no assumptions and simply lets you browse folders and files — much like a file manager. This mode suits a library that hasn't taken shape yet.
+- **A styled share** (has `_styles.json`): nook takes it to be a collection already organized by the rules below, and lays it out according to the structure you've defined.
 
-这一判断在点开 share 时自动完成，无需手动切换。下面要展开的，正是「风格共享文件夹」内部的那套结构——它不写死在软件里，而是由文件夹的组织方式和几个约定文件决定，软件只负责读取并呈现。这套结构是作者本人整理收藏的习惯；会编程的使用者，也可以在此基础上改写代码，换成自己偏好的方式。
+This is decided automatically when you open a share; there's nothing to toggle. What follows describes the structure _inside_ a styled share — and that structure isn't baked into the app. It's determined by how the folders are arranged and by a few convention files; the app only reads and presents it. This is how the author happens to organize their own collection; if you can code, you're free to build on it and swap in whatever scheme you prefer.
 
-### 从风格开始
+### Start with style
 
-作者在面对一件收藏时，第一反应是按「风格」来归。所以 nook 的最顶层不是时间、不是类型，而是**风格**。
+When the author picks up something to collect, the first instinct is to file it by _style_. So the very top level in nook isn't time, and isn't type — it's **style**.
 
-风格如何划分，全凭个人喜好——它可以很具体，也可以相当抽象。比如可以用心理学里荣格的十二人格原型来分（Innocent、Explorer……），也可以用塔罗牌的大阿卡那来分（The Fool、The Magician……）。这些分类彼此之间还可以归组，在界面上不同的组会被分隔开展示。
+How you divide styles is entirely up to you — they can be concrete or quite abstract. You might use Jung's twelve archetypes (Innocent, Explorer, …), or the Major Arcana of the tarot (The Fool, The Magician, …). Styles can also be gathered into groups, and the UI shows different groups separated from one another.
 
-哪些文件夹被当作顶层风格、它们如何分组，就记录在根目录的 `_styles.json` 里：
+Which folders count as top-level styles, and how they're grouped, is recorded in `_styles.json` at the root:
 
 ```json
 {
-  "styles1": ["Innocent", "Explorer", "Sage"],
-  "styles2": ["The Fool", "The Magician"]
+  "styles1": {
+    "name": "Jung's Twelve Archetypes Theory",
+    "styles": ["Innocent", "Explorer", "Sage"]
+  },
+  "styles2": {
+    "name": "Tarot Major Arcana",
+    "styles": ["The Fool", "The Magician"]
+  }
 }
 ```
 
-字段名（styles1、styles2）代表分组，本身不展示，只用于在界面上分隔；每个数组里的每一项，对应根目录下一个真实存在的文件夹。只有在这里登记过的文件夹，才会作为风格出现在界面上。
+The field names (`styles1`, `styles2`) stand for groups; they aren't shown — they only separate things in the UI. Each entry in an array corresponds to a real folder under the root. Only folders registered here show up as styles.
 
-### 风格之下：人物
+### Under a style: people
 
-一种风格之下，是一个个具体的对象。最常见的是「人物」——它就是风格文件夹里的一个子文件夹，里面直接放着这个人的作品：
-
-```
-Explorer/                  （风格）
-└── 具体人物1/              （人物）
-    ├── _cover.jpg          人物封面
-    ├── _person.json         元数据（可选）
-    ├── .covers/            作品封面（可选）
-    ├── .gallery/           图片库（可选）
-    ├── 个人vlog.mp4
-    └── 旅行记录.mp4
-```
-
-人物文件夹里的 `_cover.jpg` 是这个人的封面，让浏览时一眼可辨。
-
-### 风格之下：团体
-
-但收藏里常常还有「团体」——一群人，他们既有各自的作品，也有共同参与的作品。nook 用一个简单的约定来区分人物和团体：一个文件夹如果**还包含子文件夹**，就当作团体，里面的子文件夹是它的成员；如果**不含子文件夹**（只有作品文件），就当作个人。
+Under a style sit individual subjects. The most common is a **person** — just a subfolder of the styled share, holding that person's works directly:
 
 ```
-风格/                  （风格）
-└── 集团/                   （团体：因为含有成员子文件夹）
-    ├── _cover.jpg          团体封面
-    ├── 集团成员1/           （成员，本身是一个人物）
+styled share/
+└── Person 1/               (a person)
+    ├── _cover.jpg          person cover (optional)
+    ├── _person.json        metadata (optional)
+    ├── .covers/            work covers (optional)
+    ├── .gallery/           image gallery (optional)
+    ├── personal_vlog.mp4
+    └── travel_log.mp4
+```
+
+The `_cover.jpg` in a person's folder is that person's cover, so you can tell them apart at a glance while browsing.
+
+### Under a style: groups
+
+But a collection often has **groups** too — a set of people who have both their own works and works they made together. nook tells people and groups apart with a simple convention: a folder that _also contains subfolders_ is treated as a group, and the subfolders inside it are its members; a folder with _no subfolders_ (only work files) is treated as an individual.
+
+```
+styled share/
+└── The Group/              (a group: it contains member subfolders)
+    ├── _cover.jpg          group cover
+    ├── Member 1/           (a member — itself a person)
     │   ├── _cover.jpg
     │   ├── _person.json
-    │   └── 团体MV.mp4       团体合作的作品，实际存放在这里
-    └── 集团成员2/
+    │   └── group_mv.mp4    a collaborative work, physically stored here
+    └── Member 2/
         ├── _cover.jpg
-        └── _person.json     通过 references 指向上面那支团体MV
+        └── _person.json    points to the group_mv above via references
 ```
 
-团体带来一个现实问题：一件作品（比如一支团体合作的影片）同时属于多位成员。如果为每个成员都复制一份，既浪费空间又难维护。nook 的处理是：作品实际只存放在其中一位成员名下，其他成员通过「引用」（references）指向它。这样同一件作品只有一份，却能在每位相关成员那里都被看到，而它的信息始终归属于原本存放它的那位成员。
+Groups raise a real problem: one work (say, a film the whole group made together) belongs to several members at once. Copying it into every member's folder wastes space and is a pain to maintain. nook's answer: the work is physically stored under just one member, and the others point to it through _references_. That way there's only ever one copy, yet it shows up under every member it involves — and its info always stays with the member who actually holds the file.
 
-### 作品与它们的信息
+### Works and their info
 
-每位人物名下，是一件件作品（视频文件）。作品可以有自己的封面，存放在该人物文件夹下的 `.covers/` 里，以作品的文件名命名（如 `.covers/团体MV.mp4.jpg`）。展示一件作品时，nook 依次寻找：它在 `.covers/` 下的同名封面 → 退而用该人物的 `_cover.jpg` → 再没有就用一张占位图。这样既允许为每件作品精心准备封面，也允许偷懒。
+Under each person are the works themselves (video files). A work can have its own cover, kept in that person's `.covers/` folder and named after the work's filename (e.g. `.covers/group_mv.mp4.jpg`). When showing a work, nook looks, in order, for: a same-named cover under `.covers/` → failing that, the person's `_cover.jpg` → and failing that, a placeholder image. So you can lovingly prepare a cover for every work, or not bother — both are fine.
 
-作品的附加信息——日期、简介、喜爱程度，以及前面提到的引用关系——都记录在人物文件夹下的 `person.json` 里：
+A work's extra information — date, description, how much you love it, and the references mentioned above — all live in the person's `_person.json`:
 
 ```json
 {
-  "name": "集团成员2",
-  "aliases": ["另一个昵称"],
-  "notes": "备注",
+  "name": "Member 2", // !!! there is no actual "name" field; this note is only a hint — the folder name is the name shown
+  "aliases": ["another nickname"],
+  "notes": "notes",
   "items": {
-    "个人vlog.mp4": {
+    "personal_vlog.mp4": {
       "date": "2023-06-21",
-      "description": "简介",
-      "love": "preferred"
+      "description": "description",
+      "love": "preferred",
+      "lovedAt": "2024-03-15T20:31:00.000"
     }
   },
-  "references": ["风格/集团/集团成员1/团体MV.mp4"]
+  "references": ["Style/The Group/Member 1/group_mv.mp4"]
 }
 ```
 
-- `items` 的键是作品文件名，记录该作品的日期、简介和喜爱程度。
-- `love`（喜爱程度）分三档：默认（不写入）、`preferred`（喜欢）、`pinnacle`（至爱）。这三档不只是标签——在「Keep」页里，所有标为喜欢或至爱的作品会被单独汇集、分两段呈现，让收藏者随时快速回到自己最珍视的那些，而不必在整个库里翻找。
-- `references` 中每一项是一件作品的绝对路径，从风格那一层写起（不含 share 名），用于把其他人物名下的作品引用到当前人物。
+- The keys under `items` are work filenames; each records that work's date, description, and love level.
+- `love` (how much you love it) has three tiers: default (not written), `preferred` (you like it), and `pinnacle` (you treasure it). These aren't just labels — on the **Keep** page, everything marked preferred or pinnacle is gathered together on its own, so you can return to the pieces you treasure most at any time, without digging through the whole library.
+- `lovedAt` is when the work was marked as loved; the app writes it automatically, so there's nothing to edit by hand. The Keep page can use it to look back through your favorites by when you saved them.
+- Each entry in `references` is the absolute path to a work, written starting from the style level (no share name), used to pull a work from another person's folder into the current one.
 
-喜爱程度、简介、日期都可以直接在手机上点开作品后修改，改动会立即写回 `_person.json`；更复杂的设置（比如跨成员的引用关系）则在电脑上手动编辑文件完成。所有这些都是对真实文件的直接改动，没有导入导出，也没有独立数据库——收藏的数据始终和收藏待在一起，离开 nook 也依然完整可读。
+Love level, description, and date can all be edited right on your phone after you open a work, and the change is written straight back to `_person.json`. More involved settings (like cross-member references) are done by hand on your computer, editing the file directly. All of this is a direct change to the real files — there's no import/export and no separate database. Your collection's data always stays with the collection, and remains perfectly readable even without nook.
 
-### 按需，而非强制
+### On demand, never forced
 
-上面这些约定文件（`_person.json`、`_cover.jpg`、`.covers/` 等）全都是可选的。nook 默认直接展示文件夹和文件本来的样子，不要求事先准备任何配置；只有当收藏者想为某件作品设置封面、标记喜爱、写下简介时，才会在对应位置生成相应的文件。这种克制，正是为了避免落入刮削器那种把目录塞满冗余文件的境地。值得一提的是`.covers/` 文件夹不会被系统误判为团体中的人物
+All of those convention files (`_person.json`, `_cover.jpg`, `.covers/`, and so on) are optional. By default nook just shows your folders and files as they are, asking you to prepare nothing in advance; a file is created only when you want to set a cover for a work, mark it as loved, or jot down a description. That restraint is the whole point — it's how nook avoids the scraper's habit of stuffing your directories full of clutter. (Worth noting: the `.covers/` folder is never mistaken for a member of a group.)
 
-也因此，收藏库的根目录除了风格文件夹，还有几个以 `_` 开头的特殊区域（以 `_` 或 `.` 开头的文件夹不会被当作风格内容展示）：
+Because of this, a collection's root holds, besides the style folders, a few special areas whose names start with `_` (folders whose names start with `_` or `.` are never shown as style content):
 
 ```
-收藏库根/
-├── _styles.json      风格登记表
-├── _inbox/           暂存区：尚未归类的内容临时存放处（可选）
-├── _bilndbox/        盲盒：不讲究结构，所有内容平铺展示，随手翻看（可选）
-├── Style1/           风格文件夹1
-├── Style2/           风格文件夹2
+styled share/
+├── _styles.json      the style registry
+├── _inbox/           inbox: a holding area for things not yet sorted (optional)
+├── _blindbox/        blind box: no structure, everything laid out flat for casual browsing (optional)
+├── Style1/           style folder 1 (optional)
+├── Style2/           style folder 2 (optional)
 └── ...
 ```
 
-其中**盲盒**用来存放那些一时不想整理、或并不那么喜爱却又不舍得删的东西；**暂存区**用于临时堆放还没归类的内容。
+The **blind box** is for things you don't feel like sorting right now, or that you don't especially love but can't bring yourself to delete; the **inbox** is for temporarily piling up whatever hasn't been classified yet.
 
 ```
-具体人物/
-├── _cover.jpg          人物封面
-├── _person.json         元数据（可选）
-├── .covers/            作品封面（可选）
-├── .gallery/           图片库（可选）
-├── 个人vlog.mp4
-└── 旅行记录.mp4
+a person/
+├── _cover.jpg          person cover (optional)
+├── _person.json        metadata (optional)
+├── .covers/            work covers (optional)
+├── .gallery/           image gallery (optional)
+├── personal_vlog.mp4
+└── travel_log.mp4
 ```
 
-而每位人物文件夹下的 `.gallery/` 则是这个人物的**图片库**，收藏里并非只有视频，图片以及各类杂项收藏都可以放在这里——图片在专门的图库界面浏览，其他文件可切换到普通模式查看。
+And the `.gallery/` folder under each person is that person's **image gallery** — a collection isn't only videos, so images and all sorts of odds and ends can go here. Images are viewed in a dedicated gallery interface; other files can be seen by switching to plain mode.
 
-最后，nook 的所有操作只有移动和重命名，**绝不删除任何文件**——这是对收藏者最基本的安全承诺。
+Finally, every operation nook performs is a move or a rename — it **never deletes a single file**. That's the most basic safety promise it makes to a collector.
 
-### 页面（仅供参考）
+### A look at the interface
 
-落到使用上，nook 分为几个页面：**Link** 用于填写 SMB 连接信息、选择要打开的收藏库；**View** 是浏览的主场所，在风格库中按「风格 → 人物 / 团体 → 作品」逐层浏览，在普通库（或切换到普通模式）中浏览与整理文件（长按可移动或重命名），并可由此进入盲盒；**Keep** 汇集所有标记过喜爱的作品，供快速回顾。
+**Person — work — work details**
+
+<p align="center">
+  <img src="docs/person_cover.jpg" width="30%" />
+  <img src="docs/work_cover.jpg" width="30%" />
+  <img src="docs/work_info.jpg" width="30%" />
+</p>
+
+**Login — blind box — Keep (person view)**
+
+<p align="center">
+  <img src="docs/login.jpg" width="30%" />
+  <img src="docs/blindbox.jpg" width="30%" />
+  <img src="docs/keep.jpg" width="30%" />
+</p>
 
 ## License
 
-本项目以 [GNU General Public License v3.0](LICENSE) 授权。
+This project is licensed under the [GNU General Public License v3.0](LICENSE).
 
-## 开发环境与构建（从源码运行）
+## Development & building (running from source)
 
-普通使用直接安装发布的 APK 即可，无需编译。以下面向希望从源码运行或修改的开发者。
+For everyday use, just install the released APK — no compiling needed. The following is for developers who want to run or modify the source.
 
-环境（Windows，无需 Android Studio）：
+Environment (Windows, no Android Studio required):
 
 - Git
 - OpenJDK
-- Flutter SDK（stable）
-- Android SDK 命令行工具（platform 与 build-tools）
+- Flutter SDK (stable)
+- Android SDK command-line tools (platform and build-tools)
 
-配置好后，`flutter doctor` 中的 Flutter 与 Android toolchain 两项应为可用状态。
+Once that's set up, the Flutter and Android toolchain entries in `flutter doctor` should both come up as ready.
 
-在手机上调试运行：
+Running on a phone for debugging:
 
-1. 手机开启开发者选项与 USB 调试，用数据线连接电脑。
-2. 在项目根目录执行：
+1. Turn on Developer options and USB debugging on your phone, and connect it to the computer with a cable.
+2. From the project root, run:
 
    ```
    flutter pub get
    flutter run
    ```
 
-3. 按需修改代码
-4. 打包 APK：
+3. Make changes as needed.
+4. Build the APK:
 
    ```
    flutter build apk --release
    ```
 
-生成的文件位于 `build/app/outputs/flutter-apk/app-release.apk`。
+The output lands at `build/app/outputs/flutter-apk/app-release.apk`.

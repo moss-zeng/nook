@@ -3,7 +3,7 @@ import '../theme.dart';
 import '../widgets.dart';
 import '../smb/smb_client.dart';
 
-const _imageExt = {'jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'heic'};
+const _imageExt = {'jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'heic', 'avif'};
 
 bool isImageFile(String name) {
   final i = name.lastIndexOf('.');
@@ -45,18 +45,18 @@ class GalleryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: C.bg,
+      backgroundColor: View_C.bg,
       appBar: AppBar(
-        backgroundColor: C.bg,
+        backgroundColor: View_C.bg,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           onPressed: () => Navigator.of(context).maybePop(),
-          icon: const Icon(Icons.arrow_back_ios_new, color: C.ink, size: 20),
+          icon: const Icon(Icons.arrow_back_ios_new, color: View_C.ink, size: 20),
         ),
         title: Text(personName,
             style: const TextStyle(
-                color: C.ink, fontSize: 18, fontWeight: FontWeight.w700)),
+                color: View_C.ink, fontSize: 18, fontWeight: FontWeight.w700)),
       ),
       body: GridView.builder(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
@@ -131,14 +131,12 @@ class _GalleryViewerState extends State<_GalleryViewer> {
       backgroundColor: Colors.transparent,
       body: Stack(
         children: [
-          // 点空白处关闭
           Positioned.fill(
             child: GestureDetector(
               onTap: () => Navigator.of(context).maybePop(),
               child: const SizedBox.expand(),
             ),
           ),
-          // 图片翻页（左右滑切换）
           PageView.builder(
             controller: _pc,
             onPageChanged: (i) => setState(() => _index = i),
@@ -148,7 +146,6 @@ class _GalleryViewerState extends State<_GalleryViewer> {
               return InteractiveViewer(
                 minScale: 1.0,
                 maxScale: 5.0,
-                // 默认支持拖拽平移（panEnabled 默认 true）
                 child: Center(
                   child: CoverImage(
                     creds: widget.creds,
@@ -160,7 +157,6 @@ class _GalleryViewerState extends State<_GalleryViewer> {
               );
             },
           ),
-          // 顶部返回
           Positioned(
             top: MediaQuery.of(context).padding.top + 4,
             left: 4,
@@ -170,7 +166,6 @@ class _GalleryViewerState extends State<_GalleryViewer> {
                   color: Colors.white, size: 22),
             ),
           ),
-          // 底部文件名
           Positioned(
             left: 0,
             right: 0,
@@ -194,4 +189,24 @@ class _GalleryViewerState extends State<_GalleryViewer> {
       ),
     );
   }
+}
+
+/// 公开入口：在 App 内打开图片查看器（普通模式点图片复用）
+void openImageViewer(
+  BuildContext context,
+  SmbCreds creds,
+  String dir,
+  List<String> images,
+  int index,
+) {
+  Navigator.of(context).push(PageRouteBuilder(
+    opaque: false,
+    barrierColor: Colors.black.withOpacity(0.85),
+    pageBuilder: (_, __, ___) => _GalleryViewer(
+      creds: creds,
+      galleryDir: dir,
+      images: images,
+      initialIndex: index,
+    ),
+  ));
 }

@@ -6,6 +6,7 @@ import 'shell.dart';
 import 'pages/link_page.dart';
 import 'pages/view_page.dart';
 import 'pages/keep_page.dart';
+import 'pages/settings_page.dart';
 
 void main() => runApp(const ProviderScope(child: NookApp()));
 

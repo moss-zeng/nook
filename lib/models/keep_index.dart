@@ -6,6 +6,9 @@ import '../models/styles.dart';
 import '../models/person.dart';
 import '../models/person_meta.dart';
 
+/// 兜底用的很旧时间：老数据无 lovedAt 时按它排，自然沉到最后
+const String _kFallbackLovedAt = '2000-01-01T00:00:00.000';
+
 /// 索引里的一条作品记录
 class IndexItem {
   final String fileName; // 作品文件名
@@ -13,11 +16,13 @@ class IndexItem {
   final String personPath; // 人物路径（相对 share 根，含 share）
   final String love; // 'preferred' / 'pinnacle'（passable 不入库）
   final String? date;
+  final String lovedAt; // 收藏时间 ISO8601；无值兜底为很旧时间
   const IndexItem({
     required this.fileName,
     required this.personName,
     required this.personPath,
     required this.love,
+    required this.lovedAt,
     this.date,
   });
 
@@ -26,25 +31,27 @@ class IndexItem {
         'p': personName,
         'pp': personPath,
         'l': love,
+        'la': lovedAt,
         if (date != null) 'd': date,
       };
 
   static IndexItem fromJson(Map j) => IndexItem(
-        fileName: j['f'].toString(),
-        personName: j['p'].toString(),
-        personPath: j['pp'].toString(),
-        love: j['l'].toString(),
+        fileName: j['f']?.toString() ?? '',
+        personName: j['p']?.toString() ?? '',
+        personPath: j['pp']?.toString() ?? '',
+        love: j['l']?.toString() ?? 'preferred',
+        lovedAt: j['la']?.toString() ?? _kFallbackLovedAt,
         date: j['d']?.toString(),
       );
 }
 
 class IndexRepo {
-  // 索引文件路径：私有目录/index_<share>.json
+  // 索引文件路径：私有目录/keep_<share>.json
   static Future<File> _file(String share) async {
     final dir = await getApplicationSupportDirectory();
     // share 名做简单清洗，避免非法文件名字符
     final safe = share.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
-    return File('${dir.path}/index_$safe.json');
+    return File('${dir.path}/keep_$safe.json');
   }
 
   /// 读取已存索引；不存在返回 null
@@ -68,6 +75,24 @@ class IndexRepo {
     final f = await _file(share);
     final text = jsonEncode(items.map((e) => e.toJson()).toList());
     await f.writeAsString(text);
+  }
+
+  /// 清除所有 Keep 索引缓存（keep_*.json）。不碰磁盘源文件。
+  static Future<int> clearAll() async {
+    final dir = await getApplicationSupportDirectory();
+    var count = 0;
+    try {
+      await for (final ent in dir.list()) {
+        final name = ent.path.split(Platform.pathSeparator).last;
+        if (ent is File &&
+            name.startsWith('keep_') &&
+            name.endsWith('.json')) {
+          await ent.delete();
+          count++;
+        }
+      }
+    } catch (_) {}
+    return count;
   }
 
   /// 全扫特定库，重建索引并写入本地。返回新索引。
@@ -206,6 +231,10 @@ class IndexRepo {
           personName: person.name,
           personPath: person.path,
           love: loveToString(m.love)!,
+          // 无 lovedAt 的老数据兜底为很旧时间，按收藏时间排序时沉到最后
+          lovedAt: (m.lovedAt != null && m.lovedAt!.isNotEmpty)
+              ? m.lovedAt!
+              : _kFallbackLovedAt,
           date: m.date,
         ));
       }
