@@ -15,7 +15,9 @@ List<String> coverCandidates(String basePath) =>
 /// 作品封面候选：作品自有封面（.covers/作品名.扩展名，尝试多扩展名 + 原文件名大小写变体），
 /// 找不到再退到人物封面 _cover.*。三处（person_page/keep/cover_index）统一用它，
 /// 保证扩展名/大小写不匹配时也能命中（封面常是 .webp，文件名可能含 .MP4 大写）。
-List<String> workCoverCandidates(String ownerPath, String fileName) {
+/// includePersonCover=false 时不追加人物封面兜底——随机模式下让无自有封面的作品落到色块。
+List<String> workCoverCandidates(String ownerPath, String fileName,
+    {bool includePersonCover = true}) {
   final dir = '$ownerPath/.covers';
   // 原文件名 + 扩展名大小写变体（如 xxx.MP4 / xxx.mp4），去重保序
   final nameVariants = <String>{
@@ -29,8 +31,8 @@ List<String> workCoverCandidates(String ownerPath, String fileName) {
       out.add('$dir/$nm.$e');
     }
   }
-  // 作品自有封面优先，其次人物封面
-  out.addAll(coverCandidates(ownerPath));
+  // 作品自有封面优先，其次人物封面（随机模式下跳过，落到色块）
+  if (includePersonCover) out.addAll(coverCandidates(ownerPath));
   return out;
 }
 

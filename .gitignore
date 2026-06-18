@@ -100,3 +100,6 @@ app.*.map.json
 
 # Coverage
 coverage/
+
+CLAUDE.md
+progress.md

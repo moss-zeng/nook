@@ -202,8 +202,12 @@ class _PersonPageState extends ConsumerState<PersonPage>
     return loved;
   }
 
-  List<String> _workCover(WorkItem w) =>
-      workCoverCandidates(w.metaOwnerPath, w.fileName);
+  // 随机配色模式开启时，作品不回退人物封面 → 无自有封面者落到作品色块
+  List<String> _workCover(WorkItem w) => workCoverCandidates(
+        w.metaOwnerPath,
+        w.fileName,
+        includePersonCover: !ref.watch(personColorModeProvider),
+      );
 
   List<String> get _personCover => coverCandidates(_personPath);
 

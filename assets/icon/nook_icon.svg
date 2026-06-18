@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+<defs>
+  <radialGradient id="houseStepGradient" cx="50%" cy="62%" r="85%" rx="58%" ry="82%" fx="50%" fy="62%">
+    <stop offset="0%" stop-color="#F9EAEC" />
+    <stop offset="25%" stop-color="#E3EBE2" />
+    <stop offset="45%" stop-color="#E8EBDB" />
+    <stop offset="55%" stop-color="#F0EBD5" />
+    <stop offset="65%" stop-color="#F9F1E1" />
+    <stop offset="100%" stop-color="#F9EAEC" />
+  </radialGradient>
+</defs>
+
+  <rect width="1024" height="1024" rx="224" fill="url(#houseStepGradient)"/>
+
+  <g transform="translate(30, 150) scale(1.5)" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M80 60 Q80 40 100 40 L570 120 Q590 130 590 150 L590 380 Q590 400 570 400 L100 400 Q80 400 80 380 Z" fill="#E6DCE8"/>
+    <path d="M100 100 Q100 80 120 80 L550 160 Q570 170 570 190 L570 380 Q570 400 550 400 L120 400 Q100 400 100 380 Z" fill="#E1E3ED"/>
+    <path d="M120 140 Q120 120 140 120 L530 200 Q550 210 550 230 L550 380 Q550 400 530 400 L140 400 Q120 400 120 380 Z" fill="#DBE8F0"/>
+
+  <path d="M80 360 L590 360 Q610 370 610 374 L610 374 L60 374 Q60 370 80 360 Z" fill="#46656B"/>
+
+  <path d="M60 374 L610 374 L610 410 Q610 430 590 430 L80 430 Q60 430 60 410 L60 374 Z" fill="#DEEBE7"/>
+
+    <path d="M60 410 Q60 430 80 430 L590 430 Q610 430 610 410 Q610 440 590 450 L80 450 Q60 450 60 430 Z" fill="#E3EBE2"/>
+
+    <circle cx="290" cy="190" r="45" fill="none" stroke="#614E62" stroke-width="8"/>
+    <line x1="260" y1="180" x2="320" y2="180" stroke="#4F5F74" stroke-width="3"/>
+    <line x1="260" y1="195" x2="320" y2="195" stroke="#4F5F74" stroke-width="3"/>
+    <line x1="260" y1="210" x2="320" y2="210" stroke="#4F5F74" stroke-width="3"/>
+
+    <circle cx="390" cy="250" r="65" fill="none" stroke="#555B6E" stroke-width="12"/>
+    <circle cx="390" cy="250" r="50" fill="none" stroke="#6B525C" stroke-width="3"/>
+    <polygon points="375,230 375,270 410,250" fill="none" stroke="#6B525C" stroke-width="4"/>
+
+    <path d="M120 360 V120 Q120 100 140 100 Q180 100 200 120 V360" fill="none" stroke="#4F5F74" stroke-width="14"/>
+    <line x1="145" y1="160" x2="145" y2="360" stroke="#555B6E" stroke-width="4"/>
+    <line x1="175" y1="140" x2="175" y2="360" stroke="#555B6E" stroke-width="4"/>
+
+    <path d="M490 360 V170 M490 230 L550 170" fill="none" stroke="#4F5F74" stroke-width="14"/>
+    <path d="M495 270 L570 360" fill="none" stroke="#555B6E" stroke-width="16"/>
+  </g>
+</svg>

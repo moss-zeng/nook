@@ -120,7 +120,7 @@ class Style_C {
   static const ink19 = Color(0xFF5D6852);
   static const bg20 = Color(0xFFF9F1E1); // 暖杏3
   static const ink20 = Color(0xFF656C54);
-  // 🔴 闭环：bg20 → bg1 ΔE=3.9（≤5，顶级无缝）
+  // bg20 → bg1 ΔE=3.9（≤5）
 
   // ===== 取色工具（n 从 1 开始，自动环绕 1~20）=====
   static const List<Color> _bgs = [

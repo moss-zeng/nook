@@ -493,7 +493,7 @@ class _WorkCoverTileState extends State<_WorkCoverTile>
     final cardRadius = BorderRadius.circular(radius);
     // 封面是否偏竖（用已知比例；未知则按 fallback 0.6 当作竖）
     final ar = _resolvedAr ?? 0.6;
-    final isTall = ar < 0.8; // 宽高比 <0.8 视为细长 → 星粒上下对角
+    final isTall = ar < 0.85; // 宽高比 <0.85 视为细长 → 星粒上下对角
 
     return GestureDetector(
       onTap: widget.onSelect, // 单击：选中

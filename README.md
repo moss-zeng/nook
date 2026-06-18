@@ -1,4 +1,4 @@
-**English** · [中文](README.zh-CN.md) · [日本語](README.ja.md)
+> **English** | [简体中文](README.zh-CN.md) | [日本語](README.ja.md)
 
 # nook
 
@@ -162,7 +162,7 @@ Finally, every operation nook performs is a move or a rename — it **never dele
   <img src="docs/work_info.jpg" width="30%" />
 </p>
 
-**Login — blind box — Keep (person view)**
+**Login — blind box — Keep (person mode)**
 
 <p align="center">
   <img src="docs/login.jpg" width="30%" />
